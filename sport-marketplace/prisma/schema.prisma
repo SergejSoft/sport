@@ -1,0 +1,179 @@
+// Group Sport Discovery & Booking — Prisma schema
+// Aligned with PROJECT_OVERVIEW.md and plan Section 12.2
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  name            String?
+  avatarUrl       String?
+  isPlatformAdmin Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orgMemberships OrganisationMember[]
+  bookings       Booking[]
+  auditLogs      AuditLog[]
+}
+
+model Organisation {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  logoUrl     String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members   OrganisationMember[]
+  locations Location[]
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  COACH
+  STAFF
+}
+
+model OrganisationMember {
+  id             String       @id @default(uuid())
+  role           OrgRole
+  accountId      String
+  organisationId String
+  createdAt      DateTime     @default(now())
+
+  account      Account      @relation(fields: [accountId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  classes      Class[]      @relation("organiser")
+
+  @@unique([accountId, organisationId])
+}
+
+enum PaymentMethodAtVenue {
+  CASH
+  CARD_AT_VENUE
+}
+
+model Location {
+  id                   String                @id @default(uuid())
+  name                 String
+  address              String
+  city                 String
+  postalCode           String?
+  country              String                @default("DE")
+  latitude             Float?
+  longitude            Float?
+  timezone             String                @default("Europe/Berlin")
+  organisationId      String?
+  paymentMethodsAtVenue PaymentMethodAtVenue[] @default([])
+  claimedAt            DateTime?
+  claimedById          String?
+  createdAt            DateTime              @default(now())
+
+  organisation Organisation? @relation(fields: [organisationId], references: [id])
+  classes      Class[]
+}
+
+enum ClassStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum OfferType {
+  CLASS
+  INDIVIDUAL_TRAINING
+  BOOTCAMP
+  TOURNAMENT
+}
+
+enum SportType {
+  PADEL
+  BEACH_TENNIS
+  BEACH_VOLLEYBALL
+  FOOTBALL_PADEL
+  YOGA
+  MOUNTAIN_BIKING
+  HIKING
+  DANCE_CLASSES
+  BRAZILIAN_JIUJITSU
+  BOXING
+}
+
+model Class {
+  id              String      @id @default(uuid())
+  title           String
+  description    String?
+  offerType      OfferType   @default(CLASS)
+  sportType      SportType
+  startTime      DateTime
+  endTime        DateTime
+  capacity       Int
+  status         ClassStatus  @default(DRAFT)
+  locationId     String
+  organiserId    String
+  priceCents     Int?
+  currency       String?      @default("EUR")
+  paymentRequired Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  location  Location           @relation(fields: [locationId], references: [id])
+  organiser OrganisationMember @relation("organiser", fields: [organiserId], references: [id])
+  bookings  Booking[]
+
+  @@index([status, startTime])
+  @@index([locationId])
+  @@index([sportType])
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  WAITLIST
+}
+
+enum PaymentStatus {
+  NONE
+  PENDING
+  PAID
+  REFUNDED
+}
+
+model Booking {
+  id            String         @id @default(uuid())
+  status       BookingStatus  @default(CONFIRMED)
+  paymentStatus PaymentStatus @default(NONE)
+  accountId    String
+  classId      String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+
+  @@unique([accountId, classId])
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  action          String
+  accountId       String
+  impersonatingId String?
+  targetType     String?
+  targetId       String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+}
