@@ -47,6 +47,7 @@ Group sport discovery and booking — find and book classes, individual training
    - **Forgot password:** Users can use "Forgot password?" on the login page. They enter their email; Supabase sends a reset link. After clicking, they land on `/update-password` to set a new password.
    - **Redirect URLs:** In **Supabase → Authentication → URL Configuration**, add your app URLs to **Redirect URLs** (e.g. `http://localhost:3000/**` for dev and `https://your-app.vercel.app/**` for production). Otherwise the reset link may not redirect back to your app.
    - **Admin:** Platform admins can open `/admin` to list users, impersonate, and use "Send reset" to trigger a password-reset email for a user. For "Send reset" to send email automatically, set `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API → service_role) and optionally `RESEND_API_KEY` and `EMAIL_FROM`. Without Resend, the action still generates the reset link; you can send resets from **Supabase Dashboard → Authentication → Users** (link on the admin page).
+   - **Account:** Logged-in users can open **Account** in the header to view and edit their profile (optional name, surname, phone, gender). The header shows user type in parentheses, e.g. `email (Admin)`. See [docs/ACCOUNT_MANAGEMENT.md](docs/ACCOUNT_MANAGEMENT.md).
 
 ---
 
@@ -96,7 +97,7 @@ If any are missing, the app will show a clear error asking you to set them in Ve
 
    | Name | Value (where to get it) |
    |------|-------------------------|
-   | `DATABASE_URL` | Supabase → **Project Settings** → **Database** → **Connection string** → **URI** → choose **Transaction** (pooler, port 6543). Replace `[YOUR-PASSWORD]` with your database password. |
+   | `DATABASE_URL` | **Must be the pooler URL** (not the direct one). Supabase → **Project Settings** → **Database** → **Connection string** → **URI** → choose **Transaction** (port **6543**, host `...pooler.supabase.com`). Replace the password placeholder. If you use the direct URL (port 5432), the app will fail on Vercel with "Can't reach database server". |
    | `DIRECT_URL` | Same Supabase page → **Connection string** → **URI** → choose **Session** (direct, port 5432). Same password. |
    | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → **Project Settings** → **API** → **Project URL**. |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → **Project Settings** → **API** → **Project API keys** → **anon** / **public**. |

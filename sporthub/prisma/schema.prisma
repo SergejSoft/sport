@@ -15,6 +15,9 @@ model Account {
   id              String   @id @default(uuid())
   email           String   @unique
   name            String?
+  surname         String?
+  phone           String?
+  gender          String?
   avatarUrl       String?
   isPlatformAdmin Boolean  @default(false)
   createdAt       DateTime @default(now())

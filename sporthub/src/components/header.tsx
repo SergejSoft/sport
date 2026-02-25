@@ -66,24 +66,22 @@ export async function Header() {
                   </Link>
                 )}
                 <Link
+                  href="/account"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Account
+                </Link>
+                <Link
                   href="/update-password"
                   className="text-sm text-gray-600 hover:text-gray-900"
                 >
                   Password
                 </Link>
                 <span className="flex items-center gap-2 text-sm text-gray-600">
-                  {userTypes && userTypes.label !== "Participant" && (
-                    <span
-                      className={
-                        userTypes.label === "Admin"
-                          ? "rounded bg-violet-100 px-1.5 py-0.5 text-xs font-medium text-violet-800"
-                          : "rounded bg-sky-100 px-1.5 py-0.5 text-xs font-medium text-sky-800"
-                      }
-                    >
-                      {userTypes.label}
-                    </span>
-                  )}
                   {impersonatingAccount ? impersonatingAccount.email : user.email}
+                  <span className="text-gray-500">
+                    ({userTypes?.label ?? "Participant"})
+                  </span>
                 </span>
                 <form action={logout}>
                   <button

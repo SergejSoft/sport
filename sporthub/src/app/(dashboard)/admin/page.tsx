@@ -36,6 +36,8 @@ export default async function AdminPage() {
       id: true,
       email: true,
       name: true,
+      surname: true,
+      phone: true,
       isPlatformAdmin: true,
       createdAt: true,
       orgMemberships: { select: { role: true } },
@@ -80,6 +82,9 @@ export default async function AdminPage() {
                   Name
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  Phone
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
                   Role
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
@@ -96,7 +101,10 @@ export default async function AdminPage() {
                 return (
                   <tr key={a.id} className="bg-white">
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">{a.email}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{a.name ?? "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
+                      {[a.name, a.surname].filter(Boolean).join(" ") || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{a.phone ?? "—"}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                       <span
                         className={
