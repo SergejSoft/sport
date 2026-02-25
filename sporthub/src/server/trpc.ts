@@ -16,4 +16,12 @@ const isAuthed = t.middleware(({ ctx, next }) => {
   return next({ ctx: { ...ctx, userId: ctx.userId } });
 });
 
+const isPlatformAdmin = t.middleware(({ ctx, next }) => {
+  if (!ctx.userId || !ctx.isPlatformAdmin) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Platform admin only" });
+  }
+  return next({ ctx: { ...ctx, userId: ctx.userId } });
+});
+
 export const protectedProcedure = t.procedure.use(isAuthed);
+export const adminProcedure = t.procedure.use(isAuthed).use(isPlatformAdmin);

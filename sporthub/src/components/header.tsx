@@ -1,0 +1,95 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
+import { getOrCreateAccount, IMPERSONATE_COOKIE_NAME } from "@/lib/auth-account";
+import { prisma } from "@/lib/prisma";
+import { logout } from "@/app/actions/auth";
+import { stopImpersonation } from "@/app/actions/impersonation";
+
+export async function Header() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let account = null;
+  let impersonatingAccount: { id: string; email: string } | null = null;
+  if (user) {
+    account = await getOrCreateAccount(user);
+    const cookieStore = await cookies();
+    const impersonateId = cookieStore.get(IMPERSONATE_COOKIE_NAME)?.value;
+    if (impersonateId && account.isPlatformAdmin) {
+      const target = await prisma.account.findUnique({
+        where: { id: impersonateId },
+        select: { id: true, email: true },
+      });
+      if (target) impersonatingAccount = target;
+    }
+  }
+
+  return (
+    <>
+      {impersonatingAccount && (
+        <div className="bg-amber-100 border-b border-amber-200 px-4 py-2">
+          <div className="mx-auto flex max-w-6xl items-center justify-between">
+            <span className="text-sm text-amber-900">
+              Impersonating <strong>{impersonatingAccount.email}</strong>
+            </span>
+            <form action={stopImpersonation}>
+              <button
+                type="submit"
+                className="text-sm font-medium text-amber-900 underline hover:no-underline"
+              >
+                Stop impersonating
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <Link href="/" className="text-lg font-semibold">
+            SportHub
+          </Link>
+          <nav className="flex items-center gap-4">
+            {user ? (
+              <>
+                {account?.isPlatformAdmin && (
+                  <Link
+                    href="/admin"
+                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Admin
+                  </Link>
+                )}
+                <span className="text-sm text-gray-600">
+                  {impersonatingAccount ? impersonatingAccount.email : user.email}
+                </span>
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Log out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm font-medium text-gray-700 hover:text-gray-900">
+                  Sign in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
+    </>
+  );
+}

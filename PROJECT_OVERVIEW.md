@@ -1,4 +1,4 @@
-# Group Sport Discovery & Booking — Project Overview
+# SportHub — Project Overview
 
 **Purpose:** Single source of truth for technology choices and implementation. All new work must align with this document. When in doubt, refer here.
 
@@ -30,13 +30,13 @@ Do **not** introduce a different ORM, API style (REST/GraphQL), or UI library wi
 
 ## 2. Project structure (monorepo)
 
-Repo root contains this overview and the app in `sport-marketplace/`:
+Repo root contains this overview and the app in `sporthub/`:
 
 ```
 (Repo root)
 ├── PROJECT_OVERVIEW.md          # This file — tech and structure lock
 ├── README.md                   # Points to app + README update habit
-└── sport-marketplace/          # Next.js app
+└── sporthub/                   # Next.js app
     ├── prisma/
     │   └── schema.prisma
     ├── src/
