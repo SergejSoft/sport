@@ -5,13 +5,17 @@ import { getOrCreateAccount } from "@/lib/auth-account";
 import { AccountForm } from "@/components/account-form";
 
 export default async function AccountPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
 
-  await getOrCreateAccount(user);
+    await getOrCreateAccount(user);
+  } catch {
+    redirect("/login");
+  }
 
   return (
     <main className="mx-auto max-w-2xl p-6">

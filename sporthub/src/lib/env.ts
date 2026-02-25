@@ -29,3 +29,18 @@ export function getDatabaseUrl(): string {
   }
   return url;
 }
+
+/**
+ * Returns DATABASE_URL with ?pgbouncer=true appended when using a Supabase pooler.
+ * Avoids PostgreSQL 42P05 "prepared statement already exists" in serverless.
+ */
+export function getNormalizedDatabaseUrl(): string {
+  const url = getDatabaseUrl();
+  if (url.includes("pgbouncer=true")) return url;
+  const isPooler =
+    url.includes("pooler.supabase.com") || url.includes(":6543/");
+  if (!isPooler) return url;
+  return url.includes("?")
+    ? `${url}&pgbouncer=true`
+    : `${url}?pgbouncer=true`;
+}

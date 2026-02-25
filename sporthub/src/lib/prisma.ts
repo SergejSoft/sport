@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { getDatabaseUrl } from "@/lib/env";
+import { getNormalizedDatabaseUrl } from "@/lib/env";
 
 interface GlobalWithPrisma {
   prisma?: PrismaClient;
@@ -8,8 +8,10 @@ interface GlobalWithPrisma {
 const globalForPrisma = globalThis as GlobalWithPrisma;
 
 function createPrismaClient(): PrismaClient {
-  getDatabaseUrl(); // throws clear error if DATABASE_URL missing (e.g. on Vercel)
   return new PrismaClient({
+    datasources: {
+      db: { url: getNormalizedDatabaseUrl() },
+    },
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
 }

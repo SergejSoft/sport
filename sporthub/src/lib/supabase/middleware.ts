@@ -13,15 +13,11 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     return NextResponse.redirect(loginUrl);
   }
 
-  // #region agent log
-  const hasOAuthError = request.nextUrl.searchParams.has("error") || request.nextUrl.searchParams.has("error_code");
-  fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "middleware.ts:updateSession", message: "middleware entry", data: { path: request.nextUrl.pathname, hasOAuthError, query: request.nextUrl.search }, timestamp: Date.now(), hypothesisId: "A" }) }).catch(() => {});
-  // #endregion
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return NextResponse.next();
 
-  let response = NextResponse.next({ request });
+  const response = NextResponse.next({ request });
   const supabase = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
@@ -35,17 +31,6 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     },
   });
 
-  // #region agent log
-  let getUserDone = false;
-  let getUserErr: unknown = null;
-  try {
-    await supabase.auth.getUser();
-    getUserDone = true;
-  } catch (e) {
-    getUserErr = e;
-  }
-  fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "middleware.ts:afterGetUser", message: "after getUser", data: { getUserDone, getUserErr: getUserErr != null ? String(getUserErr) : null }, timestamp: Date.now(), hypothesisId: "A" }) }).catch(() => {});
-  if (getUserErr) throw getUserErr;
-  // #endregion
+  await supabase.auth.getUser();
   return response;
 }

@@ -39,6 +39,15 @@ The URL you copied (`db....supabase.co:5432`) is the **direct** connection. It d
 
 **Summary:** `DATABASE_URL` = pooler (6543) so the app can reach the DB from Vercel. `DIRECT_URL` = direct (5432) for migrations.
 
+### If you see "prepared statement already exists" (42P05) on Vercel
+
+When using the **pooler** (Transaction mode), Prisma’s prepared statements conflict with connection reuse and can trigger PostgreSQL error `42P05` (`prepared statement "s3" already exists`). **Fix:** append `?pgbouncer=true` to your **pooler** `DATABASE_URL` so Prisma does not use prepared statements.
+
+Example pooler URL with the param:
+`postgresql://postgres.xxxxx:PASSWORD@aws-0-xx.pooler.supabase.com:6543/postgres?pgbouncer=true`
+
+Set that full string (with your password) as `DATABASE_URL` in Vercel. Do **not** add `pgbouncer=true` to `DIRECT_URL` (direct connection).
+
 ### If you see "Authentication failed" (P1000)
 
 The database **password** in the URI is wrong or still a placeholder. Replace it with your real password (Supabase → Database → Reset database password if needed).
@@ -51,7 +60,7 @@ The database **password** in the URI is wrong or still a placeholder. Replace it
 
 | Variable | Required | Notes |
 |----------|----------|--------|
-| `DATABASE_URL` | Yes | **Must be the pooler** URL (port **6543**, host `...pooler.supabase.com`). The direct URL (`db....supabase.co:5432`) causes "Can't reach database server" at runtime. Supabase → Database → Connection string → **Transaction** → copy URI. |
+| `DATABASE_URL` | Yes | **Must be the pooler** URL (port **6543**) and **must end with** `?pgbouncer=true` to avoid error "prepared statement already exists" (42P05). Example: `...pooler.supabase.com:6543/postgres?pgbouncer=true`. Supabase → Database → Connection string → **Transaction** → copy URI, then add `?pgbouncer=true` if not present. |
 | `DIRECT_URL` | Yes* | Prisma schema expects it. Use the **direct** URL (port 5432) or the same pooler URL; only needed for migrations. If build fails with "Environment variable not found: DIRECT_URL", add it. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase → API → Project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase → API → anon key. |

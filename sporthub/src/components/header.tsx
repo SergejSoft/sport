@@ -8,35 +8,35 @@ import { logout } from "@/app/actions/auth";
 import { stopImpersonation } from "@/app/actions/impersonation";
 
 export async function Header() {
-  // #region agent log
-  fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "header.tsx:Header", message: "Header entry", data: {}, timestamp: Date.now(), hypothesisId: "B" }) }).catch(() => {});
-  // #endregion
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let account = null;
+  let user: { id: string; email?: string } | null = null;
+  let account: Awaited<ReturnType<typeof getOrCreateAccount>> | null = null;
   let userTypes: Awaited<ReturnType<typeof getAccountTypes>> | null = null;
   let impersonatingAccount: { id: string; email: string } | null = null;
-  if (user) {
-    // #region agent log
-    fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "header.tsx:beforeGetOrCreate", message: "Header has user", data: { userId: user.id }, timestamp: Date.now(), hypothesisId: "B" }) }).catch(() => {});
-    // #endregion
-    account = await getOrCreateAccount(user);
-    // #region agent log
-    fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "header.tsx:afterGetOrCreate", message: "after getOrCreateAccount", data: { accountId: account?.id }, timestamp: Date.now(), hypothesisId: "B" }) }).catch(() => {});
-    // #endregion
-    userTypes = await getAccountTypes(account.id);
-    const cookieStore = await cookies();
-    const impersonateId = cookieStore.get(IMPERSONATE_COOKIE_NAME)?.value;
-    if (impersonateId && account.isPlatformAdmin) {
-      const target = await prisma.account.findUnique({
-        where: { id: impersonateId },
-        select: { id: true, email: true },
-      });
-      if (target) impersonatingAccount = target;
+
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user ?? null;
+
+    if (user) {
+      account = await getOrCreateAccount(user);
+      userTypes = await getAccountTypes(account.id);
+      const cookieStore = await cookies();
+      const impersonateId = cookieStore.get(IMPERSONATE_COOKIE_NAME)?.value;
+      if (impersonateId && account.isPlatformAdmin) {
+        const target = await prisma.account.findUnique({
+          where: { id: impersonateId },
+          select: { id: true, email: true },
+        });
+        if (target) impersonatingAccount = target;
+      }
     }
+  } catch {
+    // DB or Supabase unreachable: show unauthenticated header so the app still renders
+    user = null;
+    account = null;
+    userTypes = null;
+    impersonatingAccount = null;
   }
 
   return (
@@ -92,10 +92,10 @@ export async function Header() {
                     ({userTypes?.label ?? "Participant"})
                   </span>
                 </span>
-                <form action={logout}>
+                <form action={logout} className="inline">
                   <button
                     type="submit"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                    className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900"
                   >
                     Log out
                   </button>
