@@ -8,6 +8,9 @@ import { logout } from "@/app/actions/auth";
 import { stopImpersonation } from "@/app/actions/impersonation";
 
 export async function Header() {
+  // #region agent log
+  fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "header.tsx:Header", message: "Header entry", data: {}, timestamp: Date.now(), hypothesisId: "B" }) }).catch(() => {});
+  // #endregion
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,7 +20,13 @@ export async function Header() {
   let userTypes: Awaited<ReturnType<typeof getAccountTypes>> | null = null;
   let impersonatingAccount: { id: string; email: string } | null = null;
   if (user) {
+    // #region agent log
+    fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "header.tsx:beforeGetOrCreate", message: "Header has user", data: { userId: user.id }, timestamp: Date.now(), hypothesisId: "B" }) }).catch(() => {});
+    // #endregion
     account = await getOrCreateAccount(user);
+    // #region agent log
+    fetch("http://127.0.0.1:7531/ingest/01062b9c-97dd-469a-b284-d310050c7c07", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "2e534c" }, body: JSON.stringify({ sessionId: "2e534c", location: "header.tsx:afterGetOrCreate", message: "after getOrCreateAccount", data: { accountId: account?.id }, timestamp: Date.now(), hypothesisId: "B" }) }).catch(() => {});
+    // #endregion
     userTypes = await getAccountTypes(account.id);
     const cookieStore = await cookies();
     const impersonateId = cookieStore.get(IMPERSONATE_COOKIE_NAME)?.value;
