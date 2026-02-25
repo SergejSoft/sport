@@ -47,8 +47,17 @@ The database **password** in the URI is wrong or still a placeholder. Replace it
 
 ## Vercel (production)
 
-- **`DATABASE_URL`** on Vercel **must** be the Supabase **pooler** URL (port 6543). The direct URL (port 5432) will cause "Can't reach database server" in serverless. Get the pooler URI from Supabase → Project Settings → Database → Connection string → **Transaction** (URI).
-- Optionally set **`DIRECT_URL`** to the direct URL (5432) so Prisma can run migrations from Vercel if needed; the app at runtime uses only `DATABASE_URL`.
+**Checklist — set these in Vercel → Project → Settings → Environment variables** (for Production, and Preview if you use it):
+
+| Variable | Required | Notes |
+|----------|----------|--------|
+| `DATABASE_URL` | Yes | **Must be the pooler** URL (port **6543**, host `...pooler.supabase.com`). The direct URL (`db....supabase.co:5432`) causes "Can't reach database server" at runtime. Supabase → Database → Connection string → **Transaction** → copy URI. |
+| `DIRECT_URL` | Yes* | Prisma schema expects it. Use the **direct** URL (port 5432) or the same pooler URL; only needed for migrations. If build fails with "Environment variable not found: DIRECT_URL", add it. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase → API → Project URL. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase → API → anon key. |
+| `SUPABASE_SERVICE_ROLE_KEY` | No | Only if you use Admin "Send reset" from the app. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | No | Optional; for sending reset emails via Resend. |
+
 
 ### Applying schema changes on Vercel (run migration / db push)
 

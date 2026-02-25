@@ -7,6 +7,9 @@ import { Footer } from "@/components/footer";
 import { AuthCodeExchange } from "@/components/auth-code-exchange";
 import "./globals.css";
 
+// Avoid running Header (and Prisma) at build time so Vercel build doesn't need DB access.
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
