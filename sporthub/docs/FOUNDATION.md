@@ -61,5 +61,8 @@ Run `npm run test` to verify:
 - **Env** — `assertServerEnv()` and `getDatabaseUrl()` throw when required vars are missing; pass when set.
 - **Database** — Prisma connects and can run a query; `Account` model exists (schema synced).
 - **Auth** — Supabase client creation throws when `NEXT_PUBLIC_SUPABASE_*` are missing; returns a client when set.
+- **Auth flows** — Impersonation cookie parsing (`getImpersonateCookieFromRequest`), auth callback and forgot/update-password route exports.
 
 Tests load `.env.local` via `tests/setup.ts`. If you remove or rename a required env var, the corresponding tests will fail, so env drift is detected automatically.
+
+For end-to-end auth checks (sign up, sign in, forgot password, admin), run the manual scenarios in `docs/AUTH_TEST_SCENARIOS.md`.

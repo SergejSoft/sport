@@ -43,6 +43,11 @@ Group sport discovery and booking — find and book classes, individual training
    ```
    Open the `Account` table, find your row, and set `isPlatformAdmin` to `true`. Then visit `/admin` to list users and impersonate.
 
+7. **Auth: forgot password and redirect URLs**  
+   - **Forgot password:** Users can use "Forgot password?" on the login page. They enter their email; Supabase sends a reset link. After clicking, they land on `/update-password` to set a new password.
+   - **Redirect URLs:** In **Supabase → Authentication → URL Configuration**, add your app URLs to **Redirect URLs** (e.g. `http://localhost:3000/**` for dev and `https://your-app.vercel.app/**` for production). Otherwise the reset link may not redirect back to your app.
+   - **Admin:** Platform admins can open `/admin` to list users, impersonate, and use "Send reset" to trigger a password-reset email for a user. For "Send reset" to send email automatically, set `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API → service_role) and optionally `RESEND_API_KEY` and `EMAIL_FROM`. Without Resend, the action still generates the reset link; you can send resets from **Supabase Dashboard → Authentication → Users** (link on the admin page).
+
 ---
 
 ## Phase 1 (Foundation) checklist
@@ -129,6 +134,9 @@ If any are missing, the app will show a clear error asking you to set them in Ve
 - `src/app/api/trpc/[trpc]/` — tRPC API handler
 - `src/server/` — tRPC routers and context
 - `src/lib/` — Prisma client, tRPC client, shared utils
+- `docs/AUTH_AND_USERS.md` — Auth and user management (flows, user types, Supabase config)
+- `docs/GOOGLE_SIGNIN_SETUP.md` — How to enable “Sign in with Google” (Google Cloud + Supabase)
+- `docs/AUTH_TEST_SCENARIOS.md` — Manual test scenarios to verify auth (sign up, sign in, forgot password, admin)
 
 ---
 

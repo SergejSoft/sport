@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getOrCreateAccount, IMPERSONATE_COOKIE_NAME } from "@/lib/auth-account";
+import { getAccountTypes } from "@/lib/user-types";
 import { prisma } from "@/lib/prisma";
 import { logout } from "@/app/actions/auth";
 import { stopImpersonation } from "@/app/actions/impersonation";
@@ -13,9 +14,11 @@ export async function Header() {
   } = await supabase.auth.getUser();
 
   let account = null;
+  let userTypes: Awaited<ReturnType<typeof getAccountTypes>> | null = null;
   let impersonatingAccount: { id: string; email: string } | null = null;
   if (user) {
     account = await getOrCreateAccount(user);
+    userTypes = await getAccountTypes(account.id);
     const cookieStore = await cookies();
     const impersonateId = cookieStore.get(IMPERSONATE_COOKIE_NAME)?.value;
     if (impersonateId && account.isPlatformAdmin) {
@@ -62,7 +65,24 @@ export async function Header() {
                     Admin
                   </Link>
                 )}
-                <span className="text-sm text-gray-600">
+                <Link
+                  href="/update-password"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Password
+                </Link>
+                <span className="flex items-center gap-2 text-sm text-gray-600">
+                  {userTypes && userTypes.label !== "Participant" && (
+                    <span
+                      className={
+                        userTypes.label === "Admin"
+                          ? "rounded bg-violet-100 px-1.5 py-0.5 text-xs font-medium text-violet-800"
+                          : "rounded bg-sky-100 px-1.5 py-0.5 text-xs font-medium text-sky-800"
+                      }
+                    >
+                      {userTypes.label}
+                    </span>
+                  )}
                   {impersonatingAccount ? impersonatingAccount.email : user.email}
                 </span>
                 <form action={logout}>

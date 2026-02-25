@@ -1,0 +1,28 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { getOrCreateAccount } from "@/lib/auth-account";
+import { prisma } from "@/lib/prisma";
+
+export async function setPlatformAdmin(accountId: string, isPlatformAdmin: boolean) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const current = await getOrCreateAccount(user);
+  if (!current.isPlatformAdmin) return { ok: false, error: "Forbidden" };
+
+  const target = await prisma.account.findUnique({ where: { id: accountId } });
+  if (!target) return { ok: false, error: "User not found" };
+
+  await prisma.account.update({
+    where: { id: accountId },
+    data: { isPlatformAdmin },
+  });
+  revalidatePath("/admin");
+  return { ok: true };
+}
