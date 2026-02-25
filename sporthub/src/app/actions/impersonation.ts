@@ -15,8 +15,9 @@ const COOKIE_OPTIONS = {
   path: "/",
 };
 
-export async function startImpersonation(formData: FormData) {
-  const targetAccountId = formData.get("accountId") as string | null;
+export async function startImpersonation(formData: FormData): Promise<never> {
+  const raw = formData.get("accountId");
+  const targetAccountId = typeof raw === "string" ? raw : null;
   if (!targetAccountId) redirect("/admin");
   const supabase = await createClient();
   const {
@@ -53,7 +54,7 @@ export async function startImpersonation(formData: FormData) {
   redirect("/");
 }
 
-export async function stopImpersonation() {
+export async function stopImpersonation(): Promise<never> {
   const supabase = await createClient();
   const {
     data: { user },

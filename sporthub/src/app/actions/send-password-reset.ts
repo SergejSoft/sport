@@ -6,7 +6,14 @@ import { getOrCreateAccount } from "@/lib/auth-account";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type SendResetResult = { ok: true; message: string } | { ok: false; error: string };
+export type SendResetResult =
+  | { ok: true; message: string }
+  | { ok: false; error: string };
+
+/** Resend API error response shape (subset we use) */
+interface ResendErrorBody {
+  message?: string;
+}
 
 export async function sendPasswordResetEmail(userEmail: string): Promise<SendResetResult> {
   const supabase = await createClient();
@@ -36,7 +43,7 @@ export async function sendPasswordResetEmail(userEmail: string): Promise<SendRes
       options: { redirectTo },
     });
     if (error) return { ok: false, error: error.message };
-    const link = data?.action_link;
+    const link = data?.properties?.action_link;
     if (!link) return { ok: false, error: "No link generated" };
 
     // Optional: send via Resend if configured
@@ -58,8 +65,8 @@ export async function sendPasswordResetEmail(userEmail: string): Promise<SendRes
           }),
         });
         if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          return { ok: false, error: (j as { message?: string }).message ?? "Failed to send email" };
+          const body: ResendErrorBody = await res.json().catch((): ResendErrorBody => ({}));
+          return { ok: false, error: body.message ?? "Failed to send email" };
         }
         return { ok: true, message: "Reset email sent" };
       } catch (e) {

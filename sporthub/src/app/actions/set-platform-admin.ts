@@ -6,7 +6,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getOrCreateAccount } from "@/lib/auth-account";
 import { prisma } from "@/lib/prisma";
 
-export async function setPlatformAdmin(accountId: string, isPlatformAdmin: boolean) {
+export type SetPlatformAdminResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function setPlatformAdmin(
+  accountId: string,
+  isPlatformAdmin: boolean
+): Promise<SetPlatformAdminResult> {
   const supabase = await createClient();
   const {
     data: { user },

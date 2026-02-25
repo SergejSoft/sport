@@ -1,11 +1,12 @@
 import type { User } from "@supabase/supabase-js";
+import type { Account } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 /**
  * Get or create an Account from the Supabase auth user.
  * Uses Supabase user.id as Account.id for 1:1 linking.
  */
-export async function getOrCreateAccount(supabaseUser: User) {
+export async function getOrCreateAccount(supabaseUser: User): Promise<Account> {
   const existing = await prisma.account.findUnique({
     where: { id: supabaseUser.id },
   });
