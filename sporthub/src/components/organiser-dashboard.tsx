@@ -56,6 +56,12 @@ export function OrganiserDashboard() {
             >
               Classes →
             </Link>
+            <Link
+              href={`/organiser/bookings?org=${club.id}`}
+              className="text-sm font-medium text-gray-900 hover:underline"
+            >
+              Bookings →
+            </Link>
           </div>
         </li>
       ))}

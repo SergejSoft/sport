@@ -4,6 +4,7 @@ import { adminRouter } from "./admin";
 import { accountRouter } from "./account";
 import { organiserApplicationRouter } from "./organiser-application";
 import { organiserRouter } from "./organiser";
+import { bookingRouter } from "./booking";
 
 export const appRouter = router({
   discovery: discoveryRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   account: accountRouter,
   organiserApplication: organiserApplicationRouter,
   organiser: organiserRouter,
+  booking: bookingRouter,
 });
 
 export type AppRouter = typeof appRouter;

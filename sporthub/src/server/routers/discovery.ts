@@ -35,6 +35,7 @@ export const discoveryRouter = router({
         include: {
           location: true,
           organiser: { include: { account: true, organisation: true } },
+          bookings: { where: { status: "CONFIRMED" }, select: { id: true } },
         },
       });
       let nextCursor: string | undefined;
@@ -51,6 +52,7 @@ export const discoveryRouter = router({
       include: {
         location: true,
         organiser: { include: { account: true, organisation: true } },
+        bookings: { where: { status: "CONFIRMED" }, select: { id: true } },
       },
     });
     return c;

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { AuthCodeExchange } from "@/components/auth-code-exchange";
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, isLocaleCode } from "@/lib/i18n/config";
 import "./globals.css";
 
 // Avoid running Header (and Prisma) at build time so Vercel build doesn't need DB access.
@@ -25,15 +27,19 @@ export const metadata: Metadata = {
   description: "Discover and book group sports, classes, and activities near you.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const initialLocale = isLocaleCode(localeCookie) ? localeCookie : DEFAULT_LOCALE;
+
   return (
-    <html lang="en">
+    <html lang={initialLocale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
+        <Providers initialLocale={initialLocale}>
           <Suspense fallback={null}>
             <AuthCodeExchange />
           </Suspense>

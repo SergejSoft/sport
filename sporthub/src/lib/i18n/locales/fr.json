@@ -1,0 +1,22 @@
+{
+  "app.name": "SportHub",
+  "app.tagline": "",
+  "nav.discover": "",
+  "nav.signIn": "",
+  "nav.signUp": "",
+  "nav.signOut": "",
+  "nav.account": "",
+  "nav.password": "",
+  "nav.admin": "",
+  "nav.yourClub": "",
+  "nav.classes": "",
+  "nav.myBookings": "",
+  "nav.myRequests": "",
+  "nav.becomeOrganiser": "",
+  "home.title": "",
+  "home.subtitle": "",
+  "common.loading": "",
+  "common.cancel": "",
+  "common.save": "",
+  "common.back": ""
+}

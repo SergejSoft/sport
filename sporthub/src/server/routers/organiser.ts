@@ -137,6 +137,34 @@ export const organiserRouter = router({
       });
     }),
 
+  getClassesWithBookings: protectedProcedure
+    .input(z.object({ organisationId: z.string().uuid().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const accountId = ctx.userId!;
+      const orgIds = await getOrganiserOrgIds(accountId);
+      if (orgIds.length === 0) return [];
+
+      const where = {
+        organiser: {
+          accountId,
+          organisationId: input?.organisationId ? { in: [input.organisationId] } : { in: orgIds },
+        },
+      };
+
+      return prisma.class.findMany({
+        where,
+        orderBy: { startTime: "desc" },
+        include: {
+          location: { select: { name: true, city: true } },
+          organiser: { include: { organisation: { select: { name: true } } } },
+          bookings: {
+            where: { status: "CONFIRMED" },
+            include: { account: { select: { id: true, email: true, name: true, surname: true } } },
+          },
+        },
+      });
+    }),
+
   createClass: protectedProcedure
     .input(
       z.object({

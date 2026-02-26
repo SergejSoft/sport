@@ -25,12 +25,20 @@ export function OrganiserClassesList({ organisationId }: { organisationId: strin
 
   return (
     <div className="space-y-4">
-      <Link
-        href={`/organiser/classes/new?org=${organisationId}`}
-        className="inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-      >
-        New class
-      </Link>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href={`/organiser/classes/new?org=${organisationId}`}
+          className="inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+        >
+          New class
+        </Link>
+        <Link
+          href={`/organiser/bookings?org=${organisationId}`}
+          className="inline-block rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Bookings overview
+        </Link>
+      </div>
 
       {!classes?.length ? (
         <p className="text-sm text-gray-500">No classes yet. Create one to get started.</p>

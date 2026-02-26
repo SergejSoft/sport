@@ -1,0 +1,22 @@
+{
+  "app.name": "SportHub",
+  "app.tagline": "Discover & book group sports",
+  "nav.discover": "Discover",
+  "nav.signIn": "Sign in",
+  "nav.signUp": "Sign up",
+  "nav.signOut": "Log out",
+  "nav.account": "Account",
+  "nav.password": "Password",
+  "nav.admin": "Admin",
+  "nav.yourClub": "Your club",
+  "nav.classes": "Classes",
+  "nav.myBookings": "My bookings",
+  "nav.myRequests": "My requests",
+  "nav.becomeOrganiser": "Become organiser",
+  "home.title": "Discover",
+  "home.subtitle": "Discover and book group sports, classes, and activities.",
+  "common.loading": "Loading…",
+  "common.cancel": "Cancel",
+  "common.save": "Save",
+  "common.back": "Back"
+}

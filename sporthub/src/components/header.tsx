@@ -7,6 +7,7 @@ import { getAccountTypes } from "@/lib/user-types";
 import { prisma } from "@/lib/prisma";
 import { logout } from "@/app/actions/auth";
 import { stopImpersonation } from "@/app/actions/impersonation";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export async function Header() {
   let user: User | null = null;
@@ -65,6 +66,7 @@ export async function Header() {
             SportHub
           </Link>
           <nav className="flex items-center gap-4">
+            <LanguageSwitcher />
             {user ? (
               <>
                 {account?.isPlatformAdmin && (
@@ -99,6 +101,12 @@ export async function Header() {
                     Become organiser
                   </Link>
                 )}
+                <Link
+                  href="/bookings"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  My bookings
+                </Link>
                 <Link
                   href="/my-requests"
                   className="text-sm text-gray-600 hover:text-gray-900"
