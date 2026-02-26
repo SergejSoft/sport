@@ -34,7 +34,10 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const localeCookie = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
-  const initialLocale = isLocaleCode(localeCookie) ? localeCookie : DEFAULT_LOCALE;
+  const initialLocale =
+    typeof localeCookie === "string" && isLocaleCode(localeCookie)
+      ? localeCookie
+      : DEFAULT_LOCALE;
 
   return (
     <html lang={initialLocale}>
