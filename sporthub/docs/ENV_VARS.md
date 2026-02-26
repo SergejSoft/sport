@@ -65,23 +65,29 @@ The database **password** in the URI is wrong or still a placeholder. Replace it
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase → API → Project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase → API → anon key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Only if you use Admin "Send reset" from the app. |
+| `APP_ORIGIN` | No | Server-only. Base URL for password-reset redirect (e.g. `https://your-app.vercel.app`). Defaults to `https://${VERCEL_URL}` on Vercel, else `http://localhost:3000`. Set in non-standard deployments so reset links point to the correct domain. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | No | Optional; for sending reset emails via Resend. |
 
 
-### Applying schema changes on Vercel (run migration / db push)
+### Migration-first: production uses migrations, not db push
 
-When you add or change Prisma schema (e.g. new columns on `Account`), your **local** DB was updated with `npm run db:push`, but the **production** database (used by the app on Vercel) is a separate database. It still has the old schema until you apply the same changes there.
+- **Local dev:** Use `npm run db:push` for quick schema sync, or `npm run db:migrate` to create and apply migrations. Both read from `.env.local`.
+- **Production / Preview:** Use **migrations only**. Do not use `db:push` in production — it does not create migration history and can drift from other environments.
 
-**Option A — One-time from your machine (recommended for quick updates)**  
-1. In **Vercel** → your project → **Settings** → **Environment variables**, copy the value of **`DATABASE_URL`** (the pooler URL).  
-2. From your machine, in the `sporthub` folder, run Prisma against that URL once (don’t commit this):  
-   `DATABASE_URL="paste-pooler-url-here" npx prisma db push`  
-3. Prisma will add any missing columns/tables to the production DB. After that, redeploy or just use the app; no code change needed.
+**Apply migrations to production (one-time or on each deploy):**
 
-**Option B — Run on every deploy**  
-Add a step before the Next.js build so every Vercel deploy applies the current schema. In `package.json`, change the build script to:  
-`"build": "prisma generate && prisma db push && next build --webpack"`  
-Vercel injects `DATABASE_URL` during build, so `prisma db push` will run against production. Use this only if you’re comfortable applying schema changes automatically on each deploy (this project uses `db push`, not migration history).
+1. Set **`DATABASE_URL`** and **`DIRECT_URL`** in Vercel to your production Supabase URIs (pooler and direct).
+2. From your machine (or CI), run against production once:
+   ```bash
+   cd sporthub
+   DATABASE_URL="<production-pooler-uri>" DIRECT_URL="<production-direct-uri>" npx prisma migrate deploy
+   ```
+   Or use `npm run db:migrate:deploy` after setting those env vars in the shell (e.g. in a deploy script or Vercel build: `npm run db:migrate:deploy` with Vercel env injected).
+3. When you add new migrations locally (`npm run db:migrate`), commit the new files under `prisma/migrations/`, then run `prisma migrate deploy` against production (same command as above) so production stays in sync.
+
+**Why migration-first:** Migrations are versioned and reproducible; `db:push` is dev-only and can diverge between local and production if used for both.
+
+**Existing DB created with `db:push`:** If production already has the schema (from a previous `db:push`), run `npx prisma migrate resolve --applied 20260225000000_init` once against that DB so the initial migration is marked applied; then use `migrate deploy` for any future migrations.
 
 ---
 

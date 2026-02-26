@@ -57,12 +57,66 @@ describe("auth flows: impersonation cookie", () => {
     });
     expect(getImpersonateCookieFromRequest(req)).toBe(id);
   });
+
+  it("returns null for similarly named cookie (exact key match)", () => {
+    const req = new Request("https://example.com", {
+      headers: { cookie: "sporthub_impersonate_other=550e8400-e29b-41d4-a716-446655440000" },
+    });
+    expect(getImpersonateCookieFromRequest(req)).toBeNull();
+  });
+
+  it("returns null when cookie value has malformed encoding", () => {
+    const req = new Request("https://example.com", {
+      headers: { cookie: `${IMPERSONATE_COOKIE_NAME}=%` },
+    });
+    expect(getImpersonateCookieFromRequest(req)).toBeNull();
+  });
+
+  it("returns empty string when cookie value is empty (no crash)", () => {
+    const req = new Request("https://example.com", {
+      headers: { cookie: `${IMPERSONATE_COOKIE_NAME}=` },
+    });
+    expect(getImpersonateCookieFromRequest(req)).toBe("");
+  });
+
+  it("handles value containing semicolon (exact key match, first value wins)", () => {
+    const req = new Request("https://example.com", {
+      headers: { cookie: `${IMPERSONATE_COOKIE_NAME}=id-with;semicolon; other=value` },
+    });
+    expect(getImpersonateCookieFromRequest(req)).toBe("id-with");
+  });
 });
 
-describe("auth flows: auth callback redirect", () => {
-  it("auth callback route exists and can be imported", async () => {
-    const mod = await import("@/app/auth/callback/route");
-    expect(typeof mod.GET).toBe("function");
+describe("auth flows: auth callback redirect safety (behavior)", () => {
+  it("callback route GET redirects to same-origin path, never external URL", async () => {
+    const { GET } = await import("@/app/auth/callback/route");
+    const origin = "http://localhost:3000";
+    const req = new Request(`${origin}/auth/callback?next=//evil.example.com/path`);
+    const res = await GET(req);
+    expect(res.status).toBeGreaterThanOrEqual(302);
+    expect(res.status).toBeLessThan(400);
+    const location = res.headers.get("location") ?? "";
+    expect(location).toMatch(new RegExp(`^${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/?`));
+    expect(location).not.toContain("evil.example.com");
+    expect(location).toBe(`${origin}/`);
+  });
+
+  it("callback route GET with valid internal next redirects to that path", async () => {
+    const { GET } = await import("@/app/auth/callback/route");
+    const origin = "http://localhost:3000";
+    const req = new Request(`${origin}/auth/callback?next=/account`);
+    const res = await GET(req);
+    const location = res.headers.get("location") ?? "";
+    expect(location).toBe(`${origin}/account`);
+  });
+
+  it("callback route GET with no code and absolute URL in next falls back to /", async () => {
+    const { GET } = await import("@/app/auth/callback/route");
+    const origin = "https://app.sporthub.example";
+    const req = new Request(`${origin}/auth/callback?next=https://evil.com`);
+    const res = await GET(req);
+    const location = res.headers.get("location") ?? "";
+    expect(location).toBe(`${origin}/`);
   });
 });
 

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeNextPath } from "@/lib/safe-redirect";
 
 /**
  * When the user lands with ?code= (e.g. from email confirmation link),
@@ -17,7 +18,7 @@ export function AuthCodeExchange() {
     if (!code) return;
     const supabase = createClient();
     supabase.auth.exchangeCodeForSession(code).then(() => {
-      const next = searchParams.get("next") ?? "/";
+      const next = sanitizeNextPath(searchParams.get("next"));
       router.replace(next);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when code is present

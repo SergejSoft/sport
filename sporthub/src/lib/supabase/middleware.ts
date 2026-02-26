@@ -2,15 +2,18 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
-  // Redirect OAuth error params to login so we never render pages with them (avoids server exception on Vercel).
-  const errorParam = request.nextUrl.searchParams.get("error");
-  const errorCode = request.nextUrl.searchParams.get("error_code");
-  const errorDescription = request.nextUrl.searchParams.get("error_description");
-  if (errorParam || errorCode) {
-    const message = errorDescription ?? errorParam ?? "Sign-in was cancelled or failed.";
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("error", message);
-    return NextResponse.redirect(loginUrl);
+  // Redirect OAuth error params to login only on the auth callback path (avoid hijacking other routes).
+  const pathname = request.nextUrl.pathname;
+  if (pathname === "/auth/callback") {
+    const errorParam = request.nextUrl.searchParams.get("error");
+    const errorCode = request.nextUrl.searchParams.get("error_code");
+    const errorDescription = request.nextUrl.searchParams.get("error_description");
+    if (errorParam || errorCode) {
+      const message = errorDescription ?? errorParam ?? "Sign-in was cancelled or failed.";
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("error", message);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

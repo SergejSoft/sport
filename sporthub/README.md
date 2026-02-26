@@ -21,12 +21,15 @@ Group sport discovery and booking — find and book classes, individual training
 
    `db:push`, `db:migrate`, and `db:studio` load variables from `.env.local` so Prisma can see `DATABASE_URL`.
 
-3. **Database**
+3. **Database (migration-first)**
+   - **Local dev:** Use `db:push` for a quick schema sync, or `db:migrate` to create/apply migrations.
    ```bash
    npm run db:generate   # Generate Prisma client
-   npm run db:push       # Push schema to DB (reads DATABASE_URL from .env.local)
-   # Or: npm run db:migrate   # Create and run migrations
+   npm run db:push       # Dev-only: push schema to DB (no migration history)
+   # Or:
+   npm run db:migrate    # Create new migration and apply (local)
    ```
+   - **Production / Preview:** Use migrations only. Run `npm run db:migrate:deploy` against the production DB (e.g. from CI or a one-off deploy step). Do not use `db:push` in production — it can drift from migration history. See [docs/ENV_VARS.md](docs/ENV_VARS.md) for exact commands.
 
 5. **Run**
    ```bash
@@ -104,11 +107,19 @@ If any are missing, the app will show a clear error asking you to set them in Ve
 
    Save each variable. **Redeploy** the project (Deployments → … on latest → Redeploy) so the build uses the new env.
 
-4. **Confirm deployment**
+4. **Apply database migrations (production)**  
+   Before or after the first deploy, apply migrations to the production DB so schema matches the app. From your machine (with production `DATABASE_URL` and `DIRECT_URL` set to the **production** Supabase URLs), run once:
+   ```bash
+   cd sporthub
+   DATABASE_URL="<production-pooler-uri>" DIRECT_URL="<production-direct-uri>" npx prisma migrate deploy
+   ```
+   Or add a **Build Command** / release step that runs `npm run db:migrate:deploy` with Vercel env (Vercel injects `DATABASE_URL` and `DIRECT_URL` at build time). Do **not** use `db:push` for production — use migration-first to avoid drift.
+
+5. **Confirm deployment**
    - Wait for the build to finish. Open the deployment URL.
    - You should see the SportHub home page. Sign up / sign in to confirm Supabase Auth and DB work in production.
 
-5. **Optional:** Connect a custom domain in Vercel → **Settings** → **Domains**, and add the env vars to **Preview** if you use branch deployments.
+6. **Optional:** Connect a custom domain in Vercel → **Settings** → **Domains**, and add the env vars to **Preview** if you use branch deployments.
 
 ---
 
@@ -120,10 +131,11 @@ If any are missing, the app will show a clear error asking you to set them in Ve
 | `npm run build` | Generate Prisma client + build Next.js |
 | `npm run start` | Start production server |
 | `npm run db:generate` | Generate Prisma client |
-| `npm run db:push` | Push schema to DB (dev) |
-| `npm run db:migrate` | Run migrations |
+| `npm run db:push` | **Dev-only:** Push schema to DB (no migration files). Fast for local iteration. |
+| `npm run db:migrate` | **Local:** Create a new migration and apply it (`prisma migrate dev`). |
+| `npm run db:migrate:deploy` | **Production/Preview:** Apply pending migrations only (`prisma migrate deploy`). Use this for deploy; do not use `db:push` in production. |
 | `npm run db:studio` | Open Prisma Studio |
-| `npm run test` | Run foundation tests (env, DB connection, Auth client) |
+| `npm run test` | Run tests (auth, env, DB, redirect safety, admin guard) |
 | `npm run test:watch` | Run tests in watch mode |
 
 ---

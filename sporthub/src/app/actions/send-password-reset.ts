@@ -33,9 +33,11 @@ export async function sendPasswordResetEmail(userEmail: string): Promise<SendRes
 
   try {
     const admin = createAdminClient();
-    const origin = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000";
+    const origin =
+      process.env.APP_ORIGIN ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
+      process.env.NEXT_PUBLIC_APP_ORIGIN ??
+      "http://localhost:3000";
     const redirectTo = `${origin}/auth/callback?next=/update-password`;
     const { data, error } = await admin.auth.admin.generateLink({
       type: "recovery",

@@ -2,6 +2,8 @@
 
 Use these scenarios to verify that the auth process works end-to-end. Run them manually in the browser (and optionally in Supabase Dashboard). Ensure redirect URLs and env are set per `AUTH_AND_USERS.md`.
 
+**Automated regression:** `npm run test` runs Vitest tests covering auth callback redirect safety (`next` sanitization, no external URLs), middleware OAuth error scope (no hijack of unrelated routes), admin self-demotion guard, and impersonation cookie parser (malformed/empty values). Fix any failing tests before relying on manual scenarios.
+
 ---
 
 ## Prerequisites

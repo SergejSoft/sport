@@ -28,6 +28,18 @@ export const IMPERSONATE_COOKIE_NAME = "sporthub_impersonate";
 export function getImpersonateCookieFromRequest(request: Request): string | null {
   const cookieHeader = request.headers.get("cookie");
   if (!cookieHeader) return null;
-  const match = cookieHeader.match(new RegExp(`${IMPERSONATE_COOKIE_NAME}=([^;]+)`));
-  return match ? decodeURIComponent(match[1].trim()) : null;
+  const parts = cookieHeader.split(";").map((p) => p.trim());
+  for (const part of parts) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const name = part.slice(0, eq).trim();
+    if (name !== IMPERSONATE_COOKIE_NAME) continue;
+    const value = part.slice(eq + 1).trim();
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
