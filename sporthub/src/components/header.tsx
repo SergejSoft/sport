@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getOrCreateAccount, IMPERSONATE_COOKIE_NAME } from "@/lib/auth-account";
 import { getAccountTypes } from "@/lib/user-types";
@@ -8,7 +9,7 @@ import { logout } from "@/app/actions/auth";
 import { stopImpersonation } from "@/app/actions/impersonation";
 
 export async function Header() {
-  let user: { id: string; email?: string } | null = null;
+  let user: User | null = null;
   let account: Awaited<ReturnType<typeof getOrCreateAccount>> | null = null;
   let userTypes: Awaited<ReturnType<typeof getAccountTypes>> | null = null;
   let impersonatingAccount: { id: string; email: string } | null = null;
