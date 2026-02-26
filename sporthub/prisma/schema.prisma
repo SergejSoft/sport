@@ -23,9 +23,11 @@ model Account {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  orgMemberships OrganisationMember[]
-  bookings       Booking[]
-  auditLogs      AuditLog[]
+  orgMemberships         OrganisationMember[]
+  bookings               Booking[]
+  auditLogs              AuditLog[]
+  organiserApplications  OrganiserApplication[]
+  reviewedApplications   OrganiserApplication[] @relation("ReviewedApplications")
 }
 
 model Organisation {
@@ -129,6 +131,7 @@ model Class {
   priceCents     Int?
   currency       String?      @default("EUR")
   paymentRequired Boolean     @default(false)
+  isRecurring     Boolean     @default(false)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -180,4 +183,34 @@ model AuditLog {
   createdAt      DateTime @default(now())
 
   account Account @relation(fields: [accountId], references: [id])
+}
+
+// Supply bootstrap: participant requests to become organiser; admin approves → Organisation + OWNER created
+enum OrganiserApplicationStatus {
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model OrganiserApplication {
+  id               String                        @id @default(uuid())
+  accountId        String
+  organisationName String
+  description      String
+  contactEmail     String
+  website          String?
+  city             String?
+  status           OrganiserApplicationStatus   @default(SUBMITTED)
+  reviewedById     String?
+  reviewedAt      DateTime?
+  rejectionReason  String?
+  createdAt        DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  reviewedBy Account? @relation("ReviewedApplications", fields: [reviewedById], references: [id])
+
+  @@index([accountId])
+  @@index([status])
 }

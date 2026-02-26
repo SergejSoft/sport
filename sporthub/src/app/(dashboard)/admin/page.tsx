@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { startImpersonation } from "@/app/actions/impersonation";
 import { AdminSendReset } from "@/components/admin-send-reset";
 import { AdminRoleToggle } from "@/components/admin-role-toggle";
+import { AdminOrganiserRequests } from "@/components/admin-organiser-requests";
+import { AdminDraftClasses } from "@/components/admin-draft-classes";
 import type { UserType } from "@/lib/user-types";
 
 function getRoleLabel(
@@ -147,6 +149,8 @@ export default async function AdminPage() {
             </tbody>
           </table>
         </div>
+        <AdminOrganiserRequests />
+        <AdminDraftClasses />
       </div>
     </main>
   );

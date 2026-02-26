@@ -75,6 +75,36 @@ export async function Header() {
                     Admin
                   </Link>
                 )}
+                {userTypes?.isClubOwner && (
+                  <>
+                    <Link
+                      href="/organiser"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Your club
+                    </Link>
+                    <Link
+                      href="/organiser/classes"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Classes
+                    </Link>
+                  </>
+                )}
+                {!userTypes?.isClubOwner && (
+                  <Link
+                    href="/become-organiser"
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Become organiser
+                  </Link>
+                )}
+                <Link
+                  href="/my-requests"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  My requests
+                </Link>
                 <Link
                   href="/account"
                   className="text-sm text-gray-600 hover:text-gray-900"
