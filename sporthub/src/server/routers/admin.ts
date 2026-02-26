@@ -1,8 +1,13 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import type { Prisma } from "@prisma/client";
 import { router, adminProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { OrganiserApplicationStatus, ClassStatus } from "@prisma/client";
+
+type OrganiserApplicationWithAccount = Prisma.OrganiserApplicationGetPayload<{
+  include: { account: { select: { id: true; email: true } } };
+}>;
 
 export const adminRouter = router({
   listAccounts: adminProcedure.query(async () => {
@@ -21,10 +26,10 @@ export const adminRouter = router({
         })
         .optional()
     )
-    .query(async ({ input }) => {
+    .query(async ({ input }): Promise<OrganiserApplicationWithAccount[]> => {
       const statusFilter =
         input?.status === "PENDING"
-          ? { in: [OrganiserApplicationStatus.SUBMITTED, OrganiserApplicationStatus.IN_REVIEW] as const }
+          ? { in: [OrganiserApplicationStatus.SUBMITTED, OrganiserApplicationStatus.IN_REVIEW] }
           : input?.status === "APPROVED"
             ? OrganiserApplicationStatus.APPROVED
             : input?.status === "REJECTED"
