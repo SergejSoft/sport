@@ -4,7 +4,7 @@ export const SPORT_TYPE_LABELS: Record<SportType, string> = {
   PADEL: "Padel",
   BEACH_TENNIS: "Beach tennis",
   BEACH_VOLLEYBALL: "Beach volleyball",
-  FOOTBALL_PADEL: "Football padel",
+  FOOTBALL: "Football",
   YOGA: "Yoga",
   MOUNTAIN_BIKING: "Mountain biking",
   HIKING: "Hiking",

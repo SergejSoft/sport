@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
-import { SPORT_TYPE_LABELS } from "@/lib/sport-types";
-import type { SportType } from "@prisma/client";
+import { getSportVisual } from "@/lib/sport-visual-tokens";
+import { SportCardImage } from "@/components/sport-card-image";
 
 export function DiscoveryList() {
   const { data, isLoading, error } = trpc.discovery.listClasses.useQuery(
@@ -64,28 +64,41 @@ export function DiscoveryList() {
       {items.map((c) => {
         const bookedCount = (c as { bookings?: { id: string }[] }).bookings?.length ?? 0;
         const spotsLeft = Math.max(0, c.capacity - bookedCount);
+        const token = getSportVisual(c.sportType);
         return (
           <li key={c.id}>
             <Link
               href={`/class/${c.id}`}
-              className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:border-gray-300 hover:shadow"
+              className="block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:border-gray-300 hover:shadow"
               data-testid={`discovery-class-${c.id}`}
             >
-              <span className="font-medium text-gray-900">{c.title}</span>
-              <span className="ml-2 text-sm text-gray-500">
-                {SPORT_TYPE_LABELS[c.sportType as SportType] ?? c.sportType}
-              </span>
-              <p className="mt-1 text-sm text-gray-600">
-                {c.location.name}
-                {c.location.city ? ` · ${c.location.city}` : ""}
-              </p>
-              <p className="mt-0.5 text-xs text-gray-500">
-                {new Date(c.startTime).toLocaleString()}
-                {c.priceCents != null && c.priceCents > 0 && (
-                  <span> · €{Math.round(c.priceCents / 100)}</span>
-                )}
-                <span> · {spotsLeft} available</span>
-              </p>
+              <div className="aspect-[16/10] w-full bg-gray-100">
+                <SportCardImage
+                  sportType={c.sportType}
+                  classImageUrl={null}
+                  alt=""
+                  className="h-full w-full"
+                />
+              </div>
+              <div className="p-4">
+                <span className="font-medium text-gray-900">{c.title}</span>
+                <span
+                  className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${token.bgClass} ${token.textClass} ${token.borderClass} border`}
+                >
+                  {token.label}
+                </span>
+                <p className="mt-1 text-sm text-gray-600">
+                  {c.location.name}
+                  {c.location.city ? ` · ${c.location.city}` : ""}
+                </p>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  {new Date(c.startTime).toLocaleString()}
+                  {c.priceCents != null && c.priceCents > 0 && (
+                    <span> · €{Math.round(c.priceCents / 100)}</span>
+                  )}
+                  <span> · {spotsLeft} available</span>
+                </p>
+              </div>
             </Link>
           </li>
         );
